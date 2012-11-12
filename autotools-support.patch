@@ -82,7 +82,7 @@ index 0000000..7014cee
 +AC_LANG_CPLUSPLUS
 +
 +AC_ARG_WITH([mjpeg],
-+	    AC_HELP_STRING([--with-mjpeg],[enable Motion JPEG decoder [default=yes].]),
++	    AC_HELP_STRING([--with-mjpeg],[enable Motion JPEG decoder [default=no].]),
 +	    [with_mjpeg="$withval"],[with_mjpeg="no"]
 +	    )
 +

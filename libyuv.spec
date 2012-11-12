@@ -1,30 +1,32 @@
 #
 # Conditional build:
+%bcond_without	static_libs	# don't build static library
 %bcond_without	tests		# build without tests
-%bcond_without	neon		# disable neon
+%bcond_without	armneon		# disable ARM NEON support
 
 %ifnarch %{arm}
-%undefine	with_neon
+%undefine	with_armneon
 %endif
 
 Summary:	YUV conversion and scaling functionality library
+Summary(pl.UTF-8):	Biblioteka do konwersji i skalowania YUV
 Name:		libyuv
 Version:	0
 Release:	0.14.20121001svn389
 License:	BSD
 Group:		Development/Libraries
-URL:		http://code.google.com/p/libyuv/
 ## svn -r 389 export http://libyuv.googlecode.com/svn/trunk libyuv-0
 ## tar -cjvf libyuv-0.tar.bz2 libyuv-0
 Source0:	%{name}-%{version}.tar.bz2
 # Source0-md5:	06a4d57a1d0848fcc9f5695accd771a7
 Patch1:		autotools-support.patch
-BuildRequires:	autoconf
+URL:		http://code.google.com/p/libyuv/
+BuildRequires:	autoconf >= 2.50
 BuildRequires:	automake
 BuildRequires:	gtest-devel
 BuildRequires:	libjpeg-devel
-BuildRequires:	libtool
-%{?with_neon:BuildRequires:	neon-devel}
+BuildRequires:	libstdc++-devel
+BuildRequires:	libtool >= 2:1.5
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %description
@@ -34,13 +36,39 @@ Convert YUV to formats for rendering/effects. Rotate by 90 degrees to
 adjust for mobile devices in portrait mode. Scale YUV to prepare
 content for compression, with point, bilinear or box filter.
 
+%description -l pl.UTF-8
+Ten projekt o otwartych źródłach funkcjonalnością obejmuje konwersję
+oraz skalowanie YUV. Potrafi:
+- tłumaczyć formaty kamer internetowych na YUV (I420)
+- przekształcać YUV na formaty zdatne do renderowania i efektów
+- obracać obraz o 90 stopni, aby dostosowaćdo urządzeń przenośnych
+  w trybie portretowym
+- skalować YUV w celu przygotowania do kompresji z filtrem punktowym,
+  dwuliniowym lub prostokątnym.
+
 %package devel
-Summary:	The development files for %{name}
+Summary:	The development files for libyuv
+Summary(pl.UTF-8):	Pliki programistyczne libyuv
 Group:		Development/Libraries
 Requires:	%{name} = %{version}-%{release}
 
 %description devel
-Additional header files for development with %{name}.
+Header files for development with libyuv.
+
+%description devel -l pl.UTF-8
+Pliki nagłówkowe do tworzenia programów z użyciem libyuv.
+
+%package static
+Summary:	Static libyuv library
+Summary(pl.UTF-8):	Statyczna biblioteka libyuv
+Group:		Development/Libraries
+Requires:	%{name}-devel = %{version}-%{release}
+
+%description static
+Static libyuv library.
+
+%description static -l pl.UTF-8
+Statyczna biblioteka libyuv.
 
 %prep
 %setup -q
@@ -52,12 +80,10 @@ Additional header files for development with %{name}.
 %{__autoconf}
 %{__automake}
 %configure \
-	--disable-static \
-	--with-pic \
-	--with-test \
+	%{!?with_static_libs:--disable-static} \
+	%{?with_armneon:--enable-neon} \
 	--with-mjpeg \
-	%{__enable_disable neon} \
-	%{nil}
+	--with-test
 
 %{__make}
 %{?with_tests:%{__make} check}
@@ -82,7 +108,13 @@ rm -rf $RPM_BUILD_ROOT
 
 %files devel
 %defattr(644,root,root,755)
+%attr(755,root,root) %{_libdir}/libyuv.so
 %{_includedir}/%{name}.h
 %{_includedir}/%{name}
-%{_libdir}/%{name}.so
 %{_pkgconfigdir}/%{name}.pc
+
+%if %{with static_libs}
+%files static
+%defattr(644,root,root,755)
+%{_libdir}/libyuv.a
+%endif
