@@ -12,18 +12,18 @@ Summary:	YUV conversion and scaling functionality library
 Summary(pl.UTF-8):	Biblioteka do konwersji i skalowania YUV
 Name:		libyuv
 Version:	0
-Release:	0.14.20121001svn389
+Release:	0.17.20121221svn522
 License:	BSD
 Group:		Development/Libraries
-## svn -r 389 export http://libyuv.googlecode.com/svn/trunk libyuv-0
-## tar -cjvf libyuv-0.tar.bz2 libyuv-0
-Source0:	%{name}-%{version}.tar.bz2
-# Source0-md5:	06a4d57a1d0848fcc9f5695accd771a7
+## svn -r 522 export http://libyuv.googlecode.com/svn/trunk libyuv
+## tar -cjf libyuv.tar.bz2 --exclude-vcs libyuv
+Source0:	%{name}-svn522.tar.bz2
+# Source0-md5:	497724b093c5bda234e75d418cfc0f7e
 Patch1:		autotools-support.patch
 URL:		http://code.google.com/p/libyuv/
 BuildRequires:	autoconf >= 2.50
 BuildRequires:	automake
-BuildRequires:	gtest-devel
+%{?with_tests:BuildRequires:	gtest-devel}
 BuildRequires:	libjpeg-devel
 BuildRequires:	libstdc++-devel
 BuildRequires:	libtool >= 2:1.5
@@ -41,8 +41,8 @@ Ten projekt o otwartych źródłach funkcjonalnością obejmuje konwersję
 oraz skalowanie YUV. Potrafi:
 - tłumaczyć formaty kamer internetowych na YUV (I420)
 - przekształcać YUV na formaty zdatne do renderowania i efektów
-- obracać obraz o 90 stopni, aby dostosowaćdo urządzeń przenośnych
-  w trybie portretowym
+- obracać obraz o 90 stopni, aby dostosowaćdo urządzeń przenośnych w
+  trybie portretowym
 - skalować YUV w celu przygotowania do kompresji z filtrem punktowym,
   dwuliniowym lub prostokątnym.
 
@@ -71,7 +71,8 @@ Static libyuv library.
 Statyczna biblioteka libyuv.
 
 %prep
-%setup -q
+%setup -qc
+mv libyuv-*/* .
 %patch1 -p1
 
 %build
@@ -83,7 +84,7 @@ Statyczna biblioteka libyuv.
 	%{!?with_static_libs:--disable-static} \
 	%{?with_armneon:--enable-neon} \
 	--with-mjpeg \
-	--with-test
+	%{?with_tests:--with-test}
 
 %{__make}
 %{?with_tests:%{__make} check}
