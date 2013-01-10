@@ -7,7 +7,8 @@ package=libyuv
 specfile=$package.spec
 baseurl=http://$package.googlecode.com/svn
 svnurl=$baseurl/trunk
-tarball=$package-$(date +%Y%m%d).tar.xz
+release_dir=$package-$(date +%Y%m%d)
+tarball=$release_dir.tar.xz
 
 # get depot tools
 # http://www.chromium.org/developers/how-tos/install-depot-tools
@@ -38,6 +39,9 @@ sed -i -re '/"url"/ s,"http[^"]+","'$svnurl'",' .gclient
 
 cd ..
 
-XZ_OPT=-e9 tar -caf $tarball --exclude-vcs $package
+cp -al $package $release_dir
+XZ_OPT=-e9 tar -caf $tarball --exclude-vcs $release_dir
+rm -rf $release_dir
+
 ../md5 $specfile
 ../dropin $tarball &
