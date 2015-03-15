@@ -6,7 +6,7 @@
  
 -add_library(${ly_lib_name} STATIC ${ly_source_files})
 +add_library(${ly_lib_name} ${ly_source_files})
-+set_target_properties(${ly_lib_name} PROPERTIES VERSION 0.0.0 SOVERSION 0)
++set_target_properties(${ly_lib_name} PROPERTIES VERSION 1.0.0 SOVERSION 1)
  
  add_executable(convert ${ly_base_dir}/util/convert.cc)
  target_link_libraries(convert ${ly_lib_name})
