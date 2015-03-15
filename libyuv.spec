@@ -1,32 +1,27 @@
 #
 # Conditional build:
-%bcond_without	static_libs	# don't build static library
+%bcond_with	static_libs	# don't build static library
 %bcond_without	tests		# build without tests
-%bcond_without	armneon		# disable ARM NEON support
 
-%ifnarch %{arm}
-%undefine	with_armneon
-%endif
-
+%define	svnver	1325
 Summary:	YUV conversion and scaling functionality library
 Summary(pl.UTF-8):	Biblioteka do konwersji i skalowania YUV
 Name:		libyuv
-Version:	0
-Release:	0.17.20121221svn522
+Version:	0.%{svnver}
+Release:	1
 License:	BSD
 Group:		Development/Libraries
-## svn -r 522 export http://libyuv.googlecode.com/svn/trunk libyuv
-## tar -cjf libyuv.tar.bz2 --exclude-vcs libyuv
-Source0:	%{name}-svn522.tar.bz2
-# Source0-md5:	497724b093c5bda234e75d418cfc0f7e
-Patch1:		autotools-support.patch
+## svn -r 1325 export http://libyuv.googlecode.com/svn/trunk libyuv
+## tar -cJf libyuv-svn1325.tar.bz2 --exclude-vcs libyuv
+Source0:	%{name}-svn%{svnver}.tar.xz
+# Source0-md5:	f18002950f43df0d168fbf8fcb5fc9c1
+Source1:	%{name}.pc
+Patch0:		shared-lib.patch
 URL:		http://code.google.com/p/libyuv/
-BuildRequires:	autoconf >= 2.50
-BuildRequires:	automake
+BuildRequires:	cmake
 %{?with_tests:BuildRequires:	gtest-devel}
 BuildRequires:	libjpeg-devel
 BuildRequires:	libstdc++-devel
-BuildRequires:	libtool >= 2:1.5
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %description
@@ -71,29 +66,30 @@ Static libyuv library.
 Statyczna biblioteka libyuv.
 
 %prep
-%setup -qc
-mv libyuv-*/* .
-%patch1 -p1
+%setup -q -n %{name}
+%patch0 -p1
 
 %build
-%{__libtoolize}
-%{__aclocal}
-%{__autoconf}
-%{__automake}
-%configure \
-	%{!?with_static_libs:--disable-static} \
-	%{?with_armneon:--enable-neon} \
-	--with-mjpeg \
-	%{?with_tests:--with-test}
+mkdir -p build
+cd build
+%cmake .. %{?with_tests:-DTEST=ON}
 
 %{__make}
-%{?with_tests:%{__make} check}
+%{?with_tests:./libyuv_unittest}
 
 %install
 rm -rf $RPM_BUILD_ROOT
+install -d $RPM_BUILD_ROOT%{_pkgconfigdir}
+
+cd build
 %{__make} install \
 	DESTDIR=$RPM_BUILD_ROOT
-%{__rm} $RPM_BUILD_ROOT%{_libdir}/*.la
+
+%{__sed} -e 's|@PACKAGE_VERSION@|%{svnver}|' \
+	-e 's|@prefix@|%{_prefix}|' \
+	-e 's|@exec_prefix@|%{_prefix}|' \
+	-e 's|@libdir@|%{_libdir}|' \
+	-e 's|@includedir@|%{_includedir}|' %{SOURCE1} >$RPM_BUILD_ROOT%{_pkgconfigdir}/libyuv.pc
 
 %clean
 rm -rf $RPM_BUILD_ROOT

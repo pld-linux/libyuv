@@ -1,0 +1,28 @@
+--- libyuv/CMakeLists.txt.orig	2015-03-15 11:25:05.195695761 +0100
++++ libyuv/CMakeLists.txt	2015-03-15 11:23:31.625695127 +0100
+@@ -86,7 +86,8 @@
+ 
+ include_directories(${ly_inc_dir})
+ 
+-add_library(${ly_lib_name} STATIC ${ly_source_files})
++add_library(${ly_lib_name} ${ly_source_files})
++set_target_properties(${ly_lib_name} PROPERTIES VERSION 0.0.0 SOVERSION 0)
+ 
+ add_executable(convert ${ly_base_dir}/util/convert.cc)
+ target_link_libraries(convert ${ly_lib_name})
+@@ -96,6 +96,7 @@
+ if (JPEG_FOUND)
+   include_directories(${JPEG_INCLUDE_DIR})
+   target_link_libraries(convert ${JPEG_LIBRARY})
++  target_link_libraries(${ly_lib_name} ${JPEG_LIBRARY})
+   add_definitions(-DHAVE_JPEG)
+ endif()
+ 
+@@ -126,6 +126,6 @@
+   target_link_libraries(libyuv_unittest glibc-compat)
+ endif()
+ 
+-install(TARGETS ${ly_lib_name} DESTINATION lib)
++install(TARGETS ${ly_lib_name} DESTINATION ${CMAKE_INSTALL_LIBDIR})
+ install(FILES ${ly_header_files} DESTINATION include/libyuv)
+ install(FILES ${ly_inc_dir}/libyuv.h DESTINATION include/)
