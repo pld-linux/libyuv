@@ -8,7 +8,7 @@ Summary:	YUV conversion and scaling functionality library
 Summary(pl.UTF-8):	Biblioteka do konwersji i skalowania YUV
 Name:		libyuv
 Version:	0.%{svnver}
-Release:	2
+Release:	3
 License:	BSD
 Group:		Development/Libraries
 ## svn -r 1325 export http://libyuv.googlecode.com/svn/trunk libyuv
