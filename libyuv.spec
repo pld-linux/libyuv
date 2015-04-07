@@ -1,6 +1,5 @@
 #
 # Conditional build:
-%bcond_with	static_libs	# don't build static library
 %bcond_without	tests		# build without tests
 
 %define	svnver	1325
@@ -46,24 +45,13 @@ Summary:	The development files for libyuv
 Summary(pl.UTF-8):	Pliki programistyczne libyuv
 Group:		Development/Libraries
 Requires:	%{name} = %{version}-%{release}
+Obsoletes:	libyuv-static
 
 %description devel
 Header files for development with libyuv.
 
 %description devel -l pl.UTF-8
 Pliki nagłówkowe do tworzenia programów z użyciem libyuv.
-
-%package static
-Summary:	Static libyuv library
-Summary(pl.UTF-8):	Statyczna biblioteka libyuv
-Group:		Development/Libraries
-Requires:	%{name}-devel = %{version}-%{release}
-
-%description static
-Static libyuv library.
-
-%description static -l pl.UTF-8
-Statyczna biblioteka libyuv.
 
 %prep
 %setup -q -n %{name}
@@ -72,7 +60,8 @@ Statyczna biblioteka libyuv.
 %build
 mkdir -p build
 cd build
-%cmake .. %{?with_tests:-DTEST=ON}
+%cmake .. \
+	%{?with_tests:-DTEST=ON}
 
 %{__make}
 %{?with_tests:./libyuv_unittest}
@@ -101,17 +90,11 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(644,root,root,755)
 %doc AUTHORS LICENSE PATENTS
 %attr(755,root,root) %{_libdir}/libyuv.so.*.*.*
-%ghost %{_libdir}/libyuv.so.1
+%attr(755,root,root) %ghost %{_libdir}/libyuv.so.1
 
 %files devel
 %defattr(644,root,root,755)
 %attr(755,root,root) %{_libdir}/libyuv.so
-%{_includedir}/%{name}.h
-%{_includedir}/%{name}
-%{_pkgconfigdir}/%{name}.pc
-
-%if %{with static_libs}
-%files static
-%defattr(644,root,root,755)
-%{_libdir}/libyuv.a
-%endif
+%{_includedir}/libyuv.h
+%{_includedir}/libyuv
+%{_pkgconfigdir}/libyuv.pc
