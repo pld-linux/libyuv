@@ -1,23 +1,25 @@
 #
 # Conditional build:
-%bcond_without	tests		# build without tests
+%bcond_without	tests		# unit tests
 
-%define	svnver	1325
 Summary:	YUV conversion and scaling functionality library
 Summary(pl.UTF-8):	Biblioteka do konwersji i skalowania YUV
 Name:		libyuv
-Version:	0.%{svnver}
-Release:	3
+# see include/libyuv/version.h
+%define	yuv_ver	1788
+%define	gitref	d19f69d9df7a54eae9cfae0b650921f675d9f01a
+%define	snap	20210611
+%define	rel	1
+Version:	0.%{yuv_ver}
+Release:	0.%{snap}.%{rel}
 License:	BSD
 Group:		Development/Libraries
-## svn -r 1325 export http://libyuv.googlecode.com/svn/trunk libyuv
-## tar -cJf libyuv-svn1325.tar.bz2 --exclude-vcs libyuv
-Source0:	%{name}-svn%{svnver}.tar.xz
-# Source0-md5:	f18002950f43df0d168fbf8fcb5fc9c1
+Source0:	https://chromium.googlesource.com/libyuv/libyuv/+archive/%{gitref}.tar.gz?/%{name}-%{snap}.tar.gz
+# Source0-md5:	9783a72e05ef548dd6f6ff7c1775e744
 Source1:	%{name}.pc
 Patch0:		shared-lib.patch
-URL:		http://code.google.com/p/libyuv/
-BuildRequires:	cmake
+URL:		https://chromium.googlesource.com/libyuv/libyuv
+BuildRequires:	cmake >= 2.8
 %{?with_tests:BuildRequires:	gtest-devel}
 BuildRequires:	libjpeg-devel
 BuildRequires:	libstdc++-devel
@@ -45,7 +47,6 @@ Summary:	The development files for libyuv
 Summary(pl.UTF-8):	Pliki programistyczne libyuv
 Group:		Development/Libraries
 Requires:	%{name} = %{version}-%{release}
-Obsoletes:	libyuv-static
 
 %description devel
 Header files for development with libyuv.
@@ -53,8 +54,20 @@ Header files for development with libyuv.
 %description devel -l pl.UTF-8
 Pliki nagłówkowe do tworzenia programów z użyciem libyuv.
 
+%package static
+Summary:	Static libyuv library
+Summary(pl.UTF-8):	Statyczna biblioteka libyuv
+Group:		Development/Libraries
+Requires:	%{name}-devel = %{version}-%{release}
+
+%description static
+Static libyuv library.
+
+%description static -l pl.UTF-8
+Statyczna biblioteka libyuv.
+
 %prep
-%setup -q -n %{name}
+%setup -q -c
 %patch0 -p1
 
 %build
@@ -64,6 +77,7 @@ cd build
 	%{?with_tests:-DTEST=ON}
 
 %{__make}
+
 %{?with_tests:./libyuv_unittest}
 
 %install
@@ -74,7 +88,7 @@ cd build
 %{__make} install \
 	DESTDIR=$RPM_BUILD_ROOT
 
-%{__sed} -e 's|@PACKAGE_VERSION@|%{svnver}|' \
+%{__sed} -e 's|@PACKAGE_VERSION@|%{yuv_ver}|' \
 	-e 's|@prefix@|%{_prefix}|' \
 	-e 's|@exec_prefix@|%{_prefix}|' \
 	-e 's|@libdir@|%{_libdir}|' \
@@ -89,8 +103,9 @@ rm -rf $RPM_BUILD_ROOT
 %files
 %defattr(644,root,root,755)
 %doc AUTHORS LICENSE PATENTS
-%attr(755,root,root) %{_libdir}/libyuv.so.*.*.*
-%attr(755,root,root) %ghost %{_libdir}/libyuv.so.1
+%attr(755,root,root) %{_bindir}/yuvconvert
+%attr(755,root,root) %{_libdir}/libyuv.so.*.*
+%attr(755,root,root) %ghost %{_libdir}/libyuv.so.2
 
 %files devel
 %defattr(644,root,root,755)
@@ -98,3 +113,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/libyuv.h
 %{_includedir}/libyuv
 %{_pkgconfigdir}/libyuv.pc
+
+%files static
+%defattr(644,root,root,755)
+%{_libdir}/libyuv.a
