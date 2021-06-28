@@ -14,7 +14,9 @@ Version:	0.%{yuv_ver}
 Release:	0.%{snap}.%{rel}
 License:	BSD
 Group:		Development/Libraries
-Source0:	https://chromium.googlesource.com/libyuv/libyuv/+archive/%{gitref}.tar.gz?/%{name}-%{snap}.tar.gz
+# tarball is recreated on each download, so use dropin
+#Source0:	https://chromium.googlesource.com/libyuv/libyuv/+archive/%{gitref}.tar.gz?/%{name}-%{snap}.tar.gz
+Source0:	%{name}-%{snap}.tar.gz
 # Source0-md5:	9783a72e05ef548dd6f6ff7c1775e744
 Source1:	%{name}.pc
 Patch0:		shared-lib.patch
