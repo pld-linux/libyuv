@@ -1,0 +1,87 @@
+Fix ScaleRowUp2_Linear_SSSE3 to use SSSE3 SIMD instead of AVX
+(following upstream change in ScaleUVRowUp2_Linear_SSSE3)
+
+Fix ScaleUVRowUp2_{Linear,Bilinear}_16_SSE2 to use SSE2 SIMD instead of SSE4.1
+(based on https://stackoverflow.com/questions/11024652/simulating-packusdw-functionality-with-sse2)
+
+--- libyuv-0.1788/source/scale_gcc.cc.orig	2021-06-28 18:31:31.000000000 +0200
++++ libyuv-0.1788/source/scale_gcc.cc	2021-06-29 20:14:04.119069725 +0200
+@@ -1283,8 +1283,8 @@ void ScaleRowUp2_Linear_SSSE3(const uint
+       "paddw       %%xmm4,%%xmm2                 \n"  // 3*near+far+2 (hi)
+       "psrlw       $2,%%xmm0                     \n"  // 3/4*near+1/4*far (lo)
+       "psrlw       $2,%%xmm2                     \n"  // 3/4*near+1/4*far (hi)
+-      "vpackuswb   %%xmm2,%%xmm0,%%xmm0          \n"
+-      "vmovdqu     %%xmm0,(%1)                   \n"
++      "packuswb    %%xmm2,%%xmm0                 \n"
++      "movdqu      %%xmm0,(%1)                   \n"
+ 
+       "lea         0x8(%0),%0                    \n"
+       "lea         0x10(%1),%1                   \n"  // 8 sample to 16 sample
+@@ -2699,9 +2699,14 @@ void ScaleUVRowUp2_Linear_16_SSE2(const
+       "paddd       %%xmm2,%%xmm0                 \n"  // 3*near+far+2 (lo)
+       "paddd       %%xmm3,%%xmm1                 \n"  // 3*near+far+2 (hi)
+ 
+-      "psrld       $2,%%xmm0                     \n"  // 3/4*near+1/4*far (lo)
+-      "psrld       $2,%%xmm1                     \n"  // 3/4*near+1/4*far (hi)
+-      "packusdw    %%xmm1,%%xmm0                 \n"
++//    "psrld       $2,%%xmm0                     \n"  // 3/4*near+1/4*far (lo)
++//    "psrld       $2,%%xmm1                     \n"  // 3/4*near+1/4*far (hi)
++//    "packusdw    %%xmm1,%%xmm0                 \n"  // SSE4.1 - use SSE2 replacement
++      "pslld       $14,%%xmm0                    \n"  // 16-2
++      "pslld       $14,%%xmm1                    \n"  // 16-2
++      "psrad       $16,%%xmm0                    \n"
++      "psrad       $16,%%xmm1                    \n"
++      "packssdw    %%xmm1,%%xmm0                 \n"
+       "movdqu      %%xmm0,(%1)                   \n"
+ 
+       "lea         0x8(%0),%0                    \n"
+@@ -2766,14 +2771,14 @@ void ScaleUVRowUp2_Bilinear_16_SSE2(cons
+       "paddd       %%xmm6,%%xmm5                 \n"  // 3*near+far+8 (2, lo)
+       "paddd       %%xmm0,%%xmm4                 \n"  // 9*near+3*far (1, lo)
+       "paddd       %%xmm5,%%xmm4                 \n"  // 9 3 3 1 + 8 (1, lo)
+-      "psrld       $4,%%xmm4                     \n"  // ^ div by 16 (1, lo)
++//    "psrld       $4,%%xmm4                     \n"  // ^ div by 16 (1, lo)
+ 
+       "movdqa      %%xmm2,%%xmm5                 \n"
+       "paddd       %%xmm2,%%xmm5                 \n"  // 6*near+2*far (2, lo)
+       "paddd       %%xmm6,%%xmm0                 \n"  // 3*near+far+8 (1, lo)
+       "paddd       %%xmm2,%%xmm5                 \n"  // 9*near+3*far (2, lo)
+       "paddd       %%xmm0,%%xmm5                 \n"  // 9 3 3 1 + 8 (2, lo)
+-      "psrld       $4,%%xmm5                     \n"  // ^ div by 16 (2, lo)
++//    "psrld       $4,%%xmm5                     \n"  // ^ div by 16 (2, lo)
+ 
+       "movdqa      %%xmm1,%%xmm0                 \n"
+       "movdqa      %%xmm3,%%xmm2                 \n"
+@@ -2781,18 +2786,28 @@ void ScaleUVRowUp2_Bilinear_16_SSE2(cons
+       "paddd       %%xmm6,%%xmm2                 \n"  // 3*near+far+8 (2, hi)
+       "paddd       %%xmm1,%%xmm0                 \n"  // 9*near+3*far (1, hi)
+       "paddd       %%xmm2,%%xmm0                 \n"  // 9 3 3 1 + 8 (1, hi)
+-      "psrld       $4,%%xmm0                     \n"  // ^ div by 16 (1, hi)
++//    "psrld       $4,%%xmm0                     \n"  // ^ div by 16 (1, hi)
+ 
+       "movdqa      %%xmm3,%%xmm2                 \n"
+       "paddd       %%xmm3,%%xmm2                 \n"  // 6*near+2*far (2, hi)
+       "paddd       %%xmm6,%%xmm1                 \n"  // 3*near+far+8 (1, hi)
+       "paddd       %%xmm3,%%xmm2                 \n"  // 9*near+3*far (2, hi)
+       "paddd       %%xmm1,%%xmm2                 \n"  // 9 3 3 1 + 8 (2, hi)
+-      "psrld       $4,%%xmm2                     \n"  // ^ div by 16 (2, hi)
++//    "psrld       $4,%%xmm2                     \n"  // ^ div by 16 (2, hi)
+ 
+-      "packusdw    %%xmm0,%%xmm4                 \n"
++//    "packusdw    %%xmm0,%%xmm4                 \n"  // SSE4.1
++      "pslld       $12,%%xmm4                    \n"  // 16-4
++      "pslld       $12,%%xmm0                    \n"  // 16-4
++      "psrad       $16,%%xmm4                    \n"
++      "psrad       $16,%%xmm0                    \n"
++      "packssdw    %%xmm0,%%xmm4                 \n"
+       "movdqu      %%xmm4,(%1)                   \n"  // store above
+-      "packusdw    %%xmm2,%%xmm5                 \n"
++//    "packusdw    %%xmm2,%%xmm5                 \n"  // SSE4.1
++      "pslld       $12,%%xmm5                    \n"  // 16-4
++      "pslld       $12,%%xmm2                    \n"  // 16-4
++      "psrad       $16,%%xmm5                    \n"
++      "psrad       $16,%%xmm2                    \n"
++      "packssdw    %%xmm2,%%xmm5                 \n"
+       "movdqu      %%xmm5,(%1,%4,2)              \n"  // store below
+ 
+       "lea         0x8(%0),%0                    \n"

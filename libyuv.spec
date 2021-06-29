@@ -9,7 +9,7 @@ Name:		libyuv
 %define	yuv_ver	1788
 %define	gitref	d19f69d9df7a54eae9cfae0b650921f675d9f01a
 %define	snap	20210611
-%define	rel	1
+%define	rel	2
 Version:	0.%{yuv_ver}
 Release:	0.%{snap}.%{rel}
 License:	BSD
@@ -20,6 +20,7 @@ Source0:	%{name}-%{snap}.tar.gz
 # Source0-md5:	9783a72e05ef548dd6f6ff7c1775e744
 Source1:	%{name}.pc
 Patch0:		shared-lib.patch
+Patch1:		%{name}-simd.patch
 URL:		https://chromium.googlesource.com/libyuv/libyuv
 BuildRequires:	cmake >= 2.8
 %{?with_tests:BuildRequires:	gtest-devel}
@@ -71,6 +72,7 @@ Statyczna biblioteka libyuv.
 %prep
 %setup -q -c
 %patch0 -p1
+%patch1 -p1
 
 %build
 mkdir -p build
