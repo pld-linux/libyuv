@@ -6,10 +6,10 @@ Summary:	YUV conversion and scaling functionality library
 Summary(pl.UTF-8):	Biblioteka do konwersji i skalowania YUV
 Name:		libyuv
 # see include/libyuv/version.h
-%define	yuv_ver	1788
-%define	gitref	d19f69d9df7a54eae9cfae0b650921f675d9f01a
-%define	snap	20210611
-%define	rel	2
+%define	yuv_ver	1832
+%define	gitref	6900494d90ae095d44405cd4cc3f346971fa69c9
+%define	snap	20220629
+%define	rel	1
 Version:	0.%{yuv_ver}
 Release:	0.%{snap}.%{rel}
 License:	BSD
@@ -17,7 +17,7 @@ Group:		Development/Libraries
 # tarball is recreated on each download, so use dropin
 #Source0:	https://chromium.googlesource.com/libyuv/libyuv/+archive/%{gitref}.tar.gz?/%{name}-%{snap}.tar.gz
 Source0:	%{name}-%{snap}.tar.gz
-# Source0-md5:	9783a72e05ef548dd6f6ff7c1775e744
+# Source0-md5:	73337a2054c180a82106dc9b9bfa9d7e
 Source1:	%{name}.pc
 Patch0:		shared-lib.patch
 Patch1:		%{name}-simd.patch

@@ -6,17 +6,6 @@ Fix ScaleUVRowUp2_{Linear,Bilinear}_16_SSE2 to use SSE2 SIMD instead of SSE4.1
 
 --- libyuv-0.1788/source/scale_gcc.cc.orig	2021-06-28 18:31:31.000000000 +0200
 +++ libyuv-0.1788/source/scale_gcc.cc	2021-06-29 20:14:04.119069725 +0200
-@@ -1283,8 +1283,8 @@ void ScaleRowUp2_Linear_SSSE3(const uint
-       "paddw       %%xmm4,%%xmm2                 \n"  // 3*near+far+2 (hi)
-       "psrlw       $2,%%xmm0                     \n"  // 3/4*near+1/4*far (lo)
-       "psrlw       $2,%%xmm2                     \n"  // 3/4*near+1/4*far (hi)
--      "vpackuswb   %%xmm2,%%xmm0,%%xmm0          \n"
--      "vmovdqu     %%xmm0,(%1)                   \n"
-+      "packuswb    %%xmm2,%%xmm0                 \n"
-+      "movdqu      %%xmm0,(%1)                   \n"
- 
-       "lea         0x8(%0),%0                    \n"
-       "lea         0x10(%1),%1                   \n"  // 8 sample to 16 sample
 @@ -2699,9 +2699,14 @@ void ScaleUVRowUp2_Linear_16_SSE2(const
        "paddd       %%xmm2,%%xmm0                 \n"  // 3*near+far+2 (lo)
        "paddd       %%xmm3,%%xmm1                 \n"  // 3*near+far+2 (hi)
