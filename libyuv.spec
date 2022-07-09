@@ -26,6 +26,7 @@ BuildRequires:	cmake >= 2.8
 %{?with_tests:BuildRequires:	gtest-devel}
 BuildRequires:	libjpeg-devel
 BuildRequires:	libstdc++-devel
+BuildRequires:	rpmbuild(macros) >= 1.605
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %description
