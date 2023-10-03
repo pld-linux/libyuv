@@ -5,17 +5,9 @@
  SET_TARGET_PROPERTIES	( ${ly_lib_shared} PROPERTIES OUTPUT_NAME "${ly_lib_name}" )
  SET_TARGET_PROPERTIES	( ${ly_lib_shared} PROPERTIES PREFIX "lib" )
 +SET_TARGET_PROPERTIES   ( ${ly_lib_shared} PROPERTIES VERSION 2.1755 SOVERSION 2 )
- 
- # this creates the conversion tool
- ADD_EXECUTABLE			( yuvconvert ${ly_base_dir}/util/yuvconvert.cc )
-@@ -39,6 +40,7 @@
- if (JPEG_FOUND)
-   include_directories( ${JPEG_INCLUDE_DIR} )
-   target_link_libraries( yuvconvert ${JPEG_LIBRARY} )
-+  target_link_libraries( ${ly_lib_shared} ${JPEG_LIBRARY} )
-   add_definitions( -DHAVE_JPEG )
+ if(WIN32)
+   SET_TARGET_PROPERTIES	( ${ly_lib_shared} PROPERTIES IMPORT_PREFIX "lib" )
  endif()
- 
 @@ -76,8 +78,8 @@
  
  # install the conversion tool, .so, .a, and all the header files
