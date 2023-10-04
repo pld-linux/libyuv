@@ -22,7 +22,7 @@ Source1:	%{name}.pc
 Patch0:		shared-lib.patch
 Patch1:		%{name}-simd.patch
 URL:		https://chromium.googlesource.com/libyuv/libyuv
-BuildRequires:	cmake >= 2.8
+BuildRequires:	cmake >= 2.8.12
 %{?with_tests:BuildRequires:	gtest-devel}
 BuildRequires:	libjpeg-devel
 BuildRequires:	libstdc++-devel
