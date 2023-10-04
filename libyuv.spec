@@ -79,7 +79,7 @@ Statyczna biblioteka libyuv.
 mkdir -p build
 cd build
 %cmake .. \
-	%{?with_tests:-DTEST=ON}
+	%{?with_tests:-DUNIT_TEST=ON}
 
 %{__make}
 
